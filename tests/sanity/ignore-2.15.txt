@@ -1,28 +1,19 @@
-# Ignored sanity checks for ansible-core stable-2.15. Each entry must be
-# justified per docs.ansible.com/.../collection_contributors/collection_requirements.html
-# All `missing-gplv3-license` entries: collection is licensed EUPL-1.2 (see
-# LICENSE + galaxy.yml). Re-licence to GPL-3.0-or-later is on the v1.0 roadmap.
-# `LICENSE no-smart-quotes`: the EUPL-1.2 canonical text contains Unicode
-# typographic quotes; we cannot rewrite a copyrighted licence file.
-# `import-2.7`: collection requires ansible-core >= 2.15 which itself requires
-# Python 3.9+ on the controller; we use urllib.parse / ipaddress (Python 3.3+)
-# which break the legacy 2.7 import scan but never run there at runtime.
-LICENSE no-smart-quotes
-plugins/modules/allowed_zone.py validate-modules:missing-gplv3-license
-plugins/modules/blocked_zone.py validate-modules:missing-gplv3-license
-plugins/modules/blocklist.py validate-modules:missing-gplv3-license
-plugins/modules/record.py validate-modules:missing-gplv3-license
-plugins/modules/session.py validate-modules:missing-gplv3-license
-plugins/modules/setting.py validate-modules:missing-gplv3-license
-plugins/modules/user.py validate-modules:missing-gplv3-license
-plugins/modules/zone.py validate-modules:missing-gplv3-license
-plugins/lookup/record.py validate-modules:missing-gplv3-license
-plugins/module_utils/technitium.py import-2.7
-plugins/modules/allowed_zone.py import-2.7
-plugins/modules/blocked_zone.py import-2.7
-plugins/modules/blocklist.py import-2.7
-plugins/modules/record.py import-2.7
-plugins/modules/session.py import-2.7
-plugins/modules/setting.py import-2.7
-plugins/modules/user.py import-2.7
-plugins/modules/zone.py import-2.7
+LICENSE no-smart-quotes  # canonical EUPL-1.2 text has Unicode typographic quotes; we cannot rewrite the licence
+plugins/modules/allowed_zone.py validate-modules:missing-gplv3-license  # collection is EUPL-1.2; relicence to GPL-3.0-or-later on the v1.0 roadmap
+plugins/modules/blocked_zone.py validate-modules:missing-gplv3-license  # collection is EUPL-1.2; relicence to GPL-3.0-or-later on the v1.0 roadmap
+plugins/modules/blocklist.py validate-modules:missing-gplv3-license  # collection is EUPL-1.2; relicence to GPL-3.0-or-later on the v1.0 roadmap
+plugins/modules/record.py validate-modules:missing-gplv3-license  # collection is EUPL-1.2; relicence to GPL-3.0-or-later on the v1.0 roadmap
+plugins/modules/session.py validate-modules:missing-gplv3-license  # collection is EUPL-1.2; relicence to GPL-3.0-or-later on the v1.0 roadmap
+plugins/modules/setting.py validate-modules:missing-gplv3-license  # collection is EUPL-1.2; relicence to GPL-3.0-or-later on the v1.0 roadmap
+plugins/modules/user.py validate-modules:missing-gplv3-license  # collection is EUPL-1.2; relicence to GPL-3.0-or-later on the v1.0 roadmap
+plugins/modules/zone.py validate-modules:missing-gplv3-license  # collection is EUPL-1.2; relicence to GPL-3.0-or-later on the v1.0 roadmap
+plugins/lookup/record.py validate-modules:missing-gplv3-license  # collection is EUPL-1.2; relicence to GPL-3.0-or-later on the v1.0 roadmap
+plugins/module_utils/technitium.py import-2.7  # requires ansible-core>=2.15 (Python 3.9+); urllib.parse/ipaddress unavailable on legacy 2.7 but never exercised at runtime
+plugins/modules/allowed_zone.py import-2.7  # requires ansible-core>=2.15 (Python 3.9+); never exercised on legacy 2.7
+plugins/modules/blocked_zone.py import-2.7  # requires ansible-core>=2.15 (Python 3.9+); never exercised on legacy 2.7
+plugins/modules/blocklist.py import-2.7  # requires ansible-core>=2.15 (Python 3.9+); never exercised on legacy 2.7
+plugins/modules/record.py import-2.7  # requires ansible-core>=2.15 (Python 3.9+); never exercised on legacy 2.7
+plugins/modules/session.py import-2.7  # requires ansible-core>=2.15 (Python 3.9+); never exercised on legacy 2.7
+plugins/modules/setting.py import-2.7  # requires ansible-core>=2.15 (Python 3.9+); never exercised on legacy 2.7
+plugins/modules/user.py import-2.7  # requires ansible-core>=2.15 (Python 3.9+); never exercised on legacy 2.7
+plugins/modules/zone.py import-2.7  # requires ansible-core>=2.15 (Python 3.9+); never exercised on legacy 2.7
