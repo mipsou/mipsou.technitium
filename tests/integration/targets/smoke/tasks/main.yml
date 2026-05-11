@@ -52,7 +52,7 @@
 
     - name: Show session module output
       ansible.builtin.debug:
-        msg: "session_token_len={{ tech.session.token | length }} bootstrap_used={{ tech.bootstrap_used }} rotated={{ tech.rotated }}"
+        msg: "session_token_len={{ tech.session.token | length }} bootstrap_used={{ tech.bootstrap_used }} rotated={{ tech.rotated }} payload_keys={{ tech._debug_login_payload_keys }} token_repr={{ tech._debug_token_repr }}"
 
     - name: Probe with session module token
       ansible.builtin.uri:

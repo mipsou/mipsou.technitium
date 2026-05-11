@@ -61,6 +61,7 @@ class TechnitiumClient(object):
         self.validate_certs = validate_certs
         self.timeout = timeout
         self.token = token
+        self._last_login_payload = None
 
     @classmethod
     def from_module(cls, module):
@@ -238,6 +239,7 @@ class TechnitiumClient(object):
                 path='/api/user/login',
             )
         self.token = token
+        self._last_login_payload = payload
         return payload
 
     def logout(self):
