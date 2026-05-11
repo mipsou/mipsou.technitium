@@ -223,8 +223,10 @@ def main():
     # Ansible only masks values flagged no_log in the argument_spec on input.
     # Returned values are NOT masked automatically, so register the token as
     # a no_log value explicitly before exit_json to keep it out of `-v` logs.
-    if client.token:
-        module.no_log_values.add(client.token)
+    # Do NOT add the session token to no_log_values: Ansible would then
+    # replace it with VALUE_SPECIFIED_IN_NO_LOG_PARAMETER in the returned
+    # `session` dict, breaking every downstream task that consumes it.
+    # The bootstrap password is fine to mask because we never return it.
     if bootstrap_used and p.get('bootstrap_password'):
         module.no_log_values.add(p['bootstrap_password'])
 
