@@ -13,7 +13,7 @@ short_description: Manage authoritative zones on a Technitium DNS Server
 version_added: "0.1.0"
 description:
   - Creates or deletes authoritative DNS zones on a Technitium DNS Server.
-  - Idempotent: re-running with the same parameters reports C(changed=false).
+  - "Idempotent: re-running with the same parameters reports C(changed=false)."
   - When a zone already exists with a different I(type), the module fails
     rather than silently converting it. Convert deliberately by deleting and
     recreating, or use C(/api/zones/convert) directly via the C(uri) module.

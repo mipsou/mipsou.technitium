@@ -72,6 +72,10 @@ options:
         description: DNS query type used by the probe.
         type: str
         default: A
+      dns_port:
+        description: UDP port to probe (the DNS port, not the API port).
+        type: int
+        default: 53
 seealso:
   - module: mipsou.technitium.setting
 extends_documentation_fragment:

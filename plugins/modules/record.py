@@ -92,8 +92,12 @@ options:
   weight:
     description: Required for I(type=SRV).
     type: int
-  port:
-    description: Required for I(type=SRV).
+  srv_port:
+    description:
+      - Required for I(type=SRV). Sent as the C(port) field of the SRV record.
+      - The non-prefixed name C(port) is reserved for the Technitium API port
+        in the session documentation fragment, so this module exposes the SRV
+        port under C(srv_port).
     type: int
   target:
     description: Required for I(type=SRV).
@@ -168,7 +172,10 @@ _VALUE_FIELDS = {
     'SRV': [
         ('priority', 'priority', 'priority', 'int'),
         ('weight', 'weight', 'weight', 'int'),
-        ('port', 'port', 'port', 'int'),
+        # SRV records use a `port` field, but we expose it as `srv_port` at the
+        # module level to avoid clashing with the API-host `port` parameter
+        # from the session documentation fragment.
+        ('srv_port', 'port', 'port', 'int'),
         ('target', 'target', 'target', 'fqdn'),
     ],
 }
@@ -257,7 +264,7 @@ def main():
         split_text=dict(type='bool'),
         priority=dict(type='int'),
         weight=dict(type='int'),
-        port=dict(type='int'),
+        srv_port=dict(type='int'),
         target=dict(type='str'),
     ))
 

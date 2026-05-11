@@ -9,8 +9,10 @@ requires_ansible: '>=2.15.0'
 #     group/mipsou.technitium.all:
 #       session: "{{ tech.session }}"
 action_groups:
+  # `session` itself is intentionally excluded: it produces a session dict
+  # rather than consuming one, so `module_defaults: group/mipsou.technitium.all`
+  # would feed it a parameter it does not accept.
   all:
-    - session
     - setting
     - blocklist
     - zone
