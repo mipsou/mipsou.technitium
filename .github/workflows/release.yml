@@ -1,0 +1,60 @@
+---
+name: release
+
+# Publish the collection to Ansible Galaxy when a version tag is pushed.
+# Tag must match the version in galaxy.yml (e.g. `git tag 0.1.0 && git push --tags`).
+# Requires the repo secret GALAXY_API_KEY (from https://galaxy.ansible.com/ui/token/).
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-*'
+
+jobs:
+  publish:
+    name: Build and publish to Galaxy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: ansible_collections/mipsou/technitium
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ansible-core
+        run: pip install ansible-core
+
+      - name: Verify tag matches galaxy.yml version
+        working-directory: ansible_collections/mipsou/technitium
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          yml=$(awk '/^version:/ {print $2}' galaxy.yml | tr -d "'\"")
+          if [[ "$tag" != "$yml" ]]; then
+            echo "Tag '$tag' does not match galaxy.yml version '$yml'" >&2
+            exit 1
+          fi
+          echo "Tag and galaxy.yml agree on version $tag"
+
+      - name: Build collection
+        working-directory: ansible_collections/mipsou/technitium
+        run: ansible-galaxy collection build --force
+
+      - name: Publish to Galaxy
+        working-directory: ansible_collections/mipsou/technitium
+        env:
+          GALAXY_API_KEY: ${{ secrets.GALAXY_API_KEY }}
+        run: |
+          tarball=$(ls mipsou-technitium-*.tar.gz | head -n1)
+          ansible-galaxy collection publish "$tarball" --api-key "$GALAXY_API_KEY"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ansible_collections/mipsou/technitium/mipsou-technitium-*.tar.gz
+          generate_release_notes: true
