@@ -28,6 +28,14 @@
         password: admin
       register: tech
 
+    - name: Probe the session token via direct uri (sanity check)
+      ansible.builtin.uri:
+        url: "http://{{ tech.session.host }}:{{ tech.session.port }}/api/zones/list?token={{ tech.session.token }}"
+        method: GET
+        return_content: true
+      register: probe
+      failed_when: probe.json.status != 'ok'
+
     - name: Create primary zone
       mipsou.technitium.zone:
         session: "{{ tech.session }}"
