@@ -211,7 +211,10 @@ class TechnitiumClient(object):
         """Authenticate and store the resulting token on the client.
 
         Login must not send any prior token, so the current token is cleared
-        before the call and restored only on failure.
+        before the call and restored only on failure. Login uses GET because
+        Technitium parses login parameters from the URL query string; sending
+        them as a POST form-urlencoded body returns HTTP 200 with a bogus
+        short token that is rejected by every subsequent call.
         """
         scalars = {'user': user, 'pass': password}
         if include_info:
@@ -219,7 +222,7 @@ class TechnitiumClient(object):
         saved_token = self.token
         self.token = None
         try:
-            payload = self._request('/api/user/login', scalars=scalars, method='POST')
+            payload = self._request('/api/user/login', scalars=scalars, method='GET')
         except TechnitiumError:
             self.token = saved_token
             raise
@@ -237,17 +240,18 @@ class TechnitiumClient(object):
         if not self.token:
             return None
         try:
-            return self._request('/api/user/logout', method='POST')
+            return self._request('/api/user/logout', method='GET')
         finally:
             self.token = None
 
     def change_password(self, current_password, new_password):
         """Rotate the password of the currently logged-in user.
 
-        Technitium requires both `pass` (current) and `newPass`.
+        Technitium requires both `pass` (current) and `newPass`, passed as
+        URL query parameters (same reason as login — POST body is ignored).
         """
         scalars = {'pass': current_password, 'newPass': new_password}
-        return self._request('/api/user/changePassword', scalars=scalars, method='POST')
+        return self._request('/api/user/changePassword', scalars=scalars, method='GET')
 
 
 def is_zone_listed(client, prefix, name):
