@@ -27,8 +27,8 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install ansible-core
-        run: pip install ansible-core
+      - name: Install ansible-core + antsibull-changelog
+        run: pip install ansible-core antsibull-changelog
 
       - name: Verify tag matches galaxy.yml version
         working-directory: ansible_collections/mipsou/technitium
@@ -40,6 +40,12 @@ jobs:
             exit 1
           fi
           echo "Tag and galaxy.yml agree on version $tag"
+
+      - name: Assemble CHANGELOG.rst from fragments
+        working-directory: ansible_collections/mipsou/technitium
+        run: |
+          # Run inside the tarball context only — never commit back.
+          antsibull-changelog release --version "${GITHUB_REF_NAME}"
 
       - name: Build collection
         working-directory: ansible_collections/mipsou/technitium
