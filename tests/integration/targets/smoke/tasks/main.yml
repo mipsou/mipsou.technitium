@@ -2,29 +2,27 @@
 # Smoke test for mipsou.technitium against a real Technitium DNS Server.
 #
 # Expects a fresh Technitium container reachable at technitium_host:technitium_port
-# (default localhost:5380). The session module is exercised with bootstrap
-# admin/admin → rotation to ensure the bootstrap flow works end-to-end.
+# (default 127.0.0.1:5380) and the desired admin password in technitium_password.
 #
 # To run locally:
 #   podman run -d --name technitium-test -p 5380:5380 technitium/dns-server:latest
 #   ansible-playbook tests/integration/targets/smoke/tasks/main.yml \
 #       -e technitium_password=changeme \
 #       -e ansible_connection=local
+#
+# Note on session lifetimes: Technitium can revoke older sessions when a new
+# login happens for the same user, so we deliberately use the *most recent*
+# session token for the rest of the play (`tech` is overwritten by the second
+# login). The idempotence check on session is the rotation flag (`rotated`),
+# not the token identity.
 
 - name: smoke
   hosts: localhost
   gather_facts: false
-  module_defaults:
-    group/mipsou.technitium.all:
-      session: "{{ tech.session | default(omit) }}"
   vars:
-    # technitium_host / technitium_port / technitium_password are expected to
-    # come from -e on the command line. Defaults are inlined per-task with the
-    # `| default(...)` filter, never as self-referencing play vars (which
-    # would loop).
     test_zone: smoketest.local
   tasks:
-    - name: Open a session (bootstrap admin/admin → rotate to declared)
+    - name: Open a session (bootstrap admin/admin -> rotate to declared)
       mipsou.technitium.session:
         host: "{{ technitium_host | default('127.0.0.1') }}"
         port: "{{ technitium_port | default(5380) }}"
@@ -33,18 +31,19 @@
         bootstrap_password: admin
       register: tech
 
-    - name: Re-open session is idempotent (no rotation second time)
+    - name: Re-open session (verify it is idempotent on the rotation flag)
       mipsou.technitium.session:
         host: "{{ technitium_host | default('127.0.0.1') }}"
         port: "{{ technitium_port | default(5380) }}"
         user: admin
         password: "{{ technitium_password }}"
         bootstrap_password: admin
-      register: tech2
-      failed_when: tech2.rotated | bool
+      register: tech
+      failed_when: tech.rotated | bool
 
     - name: Create primary zone
       mipsou.technitium.zone:
+        session: "{{ tech.session }}"
         name: "{{ test_zone }}"
         type: Primary
         state: present
@@ -52,6 +51,7 @@
 
     - name: Re-create zone is idempotent
       mipsou.technitium.zone:
+        session: "{{ tech.session }}"
         name: "{{ test_zone }}"
         type: Primary
         state: present
@@ -60,6 +60,7 @@
 
     - name: Add A record
       mipsou.technitium.record:
+        session: "{{ tech.session }}"
         zone: "{{ test_zone }}"
         name: "host1.{{ test_zone }}"
         type: A
@@ -69,6 +70,7 @@
 
     - name: Re-add same A record is idempotent
       mipsou.technitium.record:
+        session: "{{ tech.session }}"
         zone: "{{ test_zone }}"
         name: "host1.{{ test_zone }}"
         type: A
@@ -79,6 +81,7 @@
 
     - name: Add a second A record on the same name (round-robin)
       mipsou.technitium.record:
+        session: "{{ tech.session }}"
         zone: "{{ test_zone }}"
         name: "host1.{{ test_zone }}"
         type: A
@@ -88,6 +91,7 @@
 
     - name: Set DNSSEC validation off and back on
       mipsou.technitium.setting:
+        session: "{{ tech.session }}"
         settings:
           dnssecValidation: false
       register: set_off
@@ -95,6 +99,7 @@
 
     - name: Re-apply same setting is idempotent
       mipsou.technitium.setting:
+        session: "{{ tech.session }}"
         settings:
           dnssecValidation: false
       register: set_off2
@@ -102,6 +107,7 @@
 
     - name: Reject domain entry in blockingBypassList
       mipsou.technitium.setting:
+        session: "{{ tech.session }}"
         settings:
           blockingBypassList:
             - netflix.com
@@ -111,6 +117,7 @@
 
     - name: Delete record
       mipsou.technitium.record:
+        session: "{{ tech.session }}"
         zone: "{{ test_zone }}"
         name: "host1.{{ test_zone }}"
         type: A
@@ -121,6 +128,7 @@
 
     - name: Delete zone
       mipsou.technitium.zone:
+        session: "{{ tech.session }}"
         name: "{{ test_zone }}"
         state: absent
       register: zone_del
@@ -128,6 +136,7 @@
 
     - name: Re-delete zone is idempotent
       mipsou.technitium.zone:
+        session: "{{ tech.session }}"
         name: "{{ test_zone }}"
         state: absent
       register: zone_del2

@@ -17,12 +17,3 @@ plugins/modules/session.py import-2.7
 plugins/modules/setting.py import-2.7
 plugins/modules/user.py import-2.7
 plugins/modules/zone.py import-2.7
-plugins/module_utils/technitium.py import-3.5
-plugins/modules/allowed_zone.py import-3.5
-plugins/modules/blocked_zone.py import-3.5
-plugins/modules/blocklist.py import-3.5
-plugins/modules/record.py import-3.5
-plugins/modules/session.py import-3.5
-plugins/modules/setting.py import-3.5
-plugins/modules/user.py import-3.5
-plugins/modules/zone.py import-3.5
