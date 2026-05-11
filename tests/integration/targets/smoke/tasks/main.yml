@@ -22,35 +22,45 @@
   vars:
     test_zone: smoketest.local
   tasks:
-    - name: Open a session (bootstrap admin/admin -> rotate to declared)
+    # Debug step: login admin/admin manually via uri to capture a known-good
+    # baseline token. Compare with the one our session module produces.
+    - name: Baseline login admin/admin via uri
+      ansible.builtin.uri:
+        url: "http://{{ technitium_host | default('127.0.0.1') }}:{{ technitium_port | default(5380) }}/api/user/login?user=admin&pass=admin&includeInfo=true"
+        method: GET
+        return_content: true
+      register: baseline_login
+
+    - name: Baseline probe with that token
+      ansible.builtin.uri:
+        url: "http://{{ technitium_host | default('127.0.0.1') }}:{{ technitium_port | default(5380) }}/api/zones/list?token={{ baseline_login.json.token }}"
+        method: GET
+        return_content: true
+      register: baseline_probe
+
+    - name: Show baseline results
+      ansible.builtin.debug:
+        msg: "login_status={{ baseline_login.json.status }} token_len={{ baseline_login.json.token | length }} probe_status={{ baseline_probe.json.status }}"
+
+    - name: Open a session via our module (NO rotation, declared password=admin)
       mipsou.technitium.session:
         host: "{{ technitium_host | default('127.0.0.1') }}"
         port: "{{ technitium_port | default(5380) }}"
         user: admin
-        password: "{{ technitium_password }}"
-        bootstrap_password: admin
+        password: admin
       register: tech
 
-    # Note: a second login while the first session is still active appears to
-    # revoke the older token on some Technitium versions. The idempotency
-    # check on `session` would need a dedicated rotation-free path; deferred
-    # to v0.2. The other modules are tested for idempotency below.
-
-    - name: Show session debug
+    - name: Show session module output
       ansible.builtin.debug:
-        msg: "host={{ tech.session.host }} port={{ tech.session.port }} token_len={{ tech.session.token | length }}"
+        msg: "session_token_len={{ tech.session.token | length }} bootstrap_used={{ tech.bootstrap_used }} rotated={{ tech.rotated }}"
 
-    - name: Direct probe via uri (does the token even work outside our module_utils?)
+    - name: Probe with session module token
       ansible.builtin.uri:
         url: "http://{{ tech.session.host }}:{{ tech.session.port }}/api/zones/list?token={{ tech.session.token }}"
         method: GET
         return_content: true
       register: probe
       failed_when: probe.json.status != 'ok'
-
-    - name: Show probe result
-      ansible.builtin.debug:
-        msg: "probe.status={{ probe.json.status }} zones_count={{ probe.json.response.zones | default([]) | length }}"
 
     - name: Create primary zone
       mipsou.technitium.zone:
