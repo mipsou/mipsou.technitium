@@ -133,12 +133,15 @@ class TechnitiumClient(object):
         url = self.base_url() + path
         body = self._build_body(scalars=scalars, lists=lists)
         headers = {
-            'Content-Type': 'application/x-www-form-urlencoded',
             'User-Agent': USER_AGENT,
             'Accept': 'application/json',
         }
 
-        # For GET, append the body as query string instead.
+        # For GET, append the body as query string instead. Critically, we
+        # only set Content-Type when there is actually a body — Technitium's
+        # /api/user/login returns a bogus token if it sees a form-urlencoded
+        # Content-Type header on a GET (the parser appears to switch into
+        # body-reading mode and finds nothing).
         request_url = url
         request_data = None
         if method.upper() == 'GET':
@@ -146,6 +149,7 @@ class TechnitiumClient(object):
             request_url = url + (sep + body if body else '')
         else:
             request_data = body
+            headers['Content-Type'] = 'application/x-www-form-urlencoded'
 
         response, info = fetch_url(
             self.module,
