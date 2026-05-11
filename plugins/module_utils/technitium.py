@@ -8,7 +8,7 @@ __metaclass__ = type
 import json as _json
 from urllib.parse import urlencode
 
-from ansible.module_utils.urls import fetch_url
+from ansible.module_utils.urls import open_url
 
 
 COLLECTION_VERSION = '0.1.0'
@@ -151,20 +151,31 @@ class TechnitiumClient(object):
             request_data = body
             headers['Content-Type'] = 'application/x-www-form-urlencoded'
 
-        response, info = fetch_url(
-            self.module,
-            request_url,
-            data=request_data,
-            headers=headers,
-            method=method,
-            timeout=self.timeout,
-        )
-
-        status_code = info.get('status')
-        if status_code is None or status_code >= 400 or status_code < 0:
+        # open_url is used rather than fetch_url to keep the request as close
+        # as possible to what ansible.builtin.uri does — fetch_url was
+        # observed to silently alter Technitium's session state on the second
+        # call against the same token.
+        try:
+            response = open_url(
+                request_url,
+                data=request_data,
+                headers=headers,
+                method=method,
+                timeout=self.timeout,
+                validate_certs=self.validate_certs,
+                follow_redirects='all',
+            )
+            status_code = response.getcode()
+        except Exception as exc:
             raise TechnitiumError(
                 'HTTP error contacting Technitium at {0}: {1}'.format(
-                    request_url, info.get('msg')),
+                    request_url, exc),
+                path=path,
+            )
+
+        if status_code >= 400:
+            raise TechnitiumError(
+                'HTTP {0} from Technitium at {1}'.format(status_code, request_url),
                 status_code=status_code,
                 path=path,
             )
