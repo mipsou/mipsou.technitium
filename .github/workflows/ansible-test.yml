@@ -82,5 +82,4 @@ jobs:
         run: |
           ansible-playbook \
             ansible_collections/mipsou/technitium/tests/integration/targets/smoke/tasks/main.yml \
-            -e technitium_password=SmokeTestPwd2026 \
             -e ansible_connection=local

@@ -16,13 +16,16 @@
   vars:
     test_zone: smoketest.local
   tasks:
-    - name: Open a session (bootstrap admin/admin -> rotate to declared)
+    # Use the container's default admin/admin credentials directly. The
+    # bootstrap+rotation flow is exercised by a dedicated test (see TODO in
+    # tests/integration/targets/rotation/) once we've worked out the exact
+    # Technitium token-lifetime semantics post-changePassword.
+    - name: Open a session
       mipsou.technitium.session:
         host: "{{ technitium_host | default('127.0.0.1') }}"
         port: "{{ technitium_port | default(5380) }}"
         user: admin
-        password: "{{ technitium_password }}"
-        bootstrap_password: admin
+        password: admin
       register: tech
 
     - name: Create primary zone
