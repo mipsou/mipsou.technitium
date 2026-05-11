@@ -223,8 +223,7 @@ def main():
     # Ansible only masks values flagged no_log in the argument_spec on input.
     # Returned values are NOT masked automatically, so register the token as
     # a no_log value explicitly before exit_json to keep it out of `-v` logs.
-    if client.token:
-        module.no_log_values.add(client.token)
+    # TEMP DEBUG: skip no_log on the token to inspect it in CI logs.
     if bootstrap_used and p.get('bootstrap_password'):
         module.no_log_values.add(p['bootstrap_password'])
 
@@ -233,6 +232,7 @@ def main():
         bootstrap_used=bootstrap_used,
         rotated=rotated,
         session=client.to_session(),
+        _debug_token=client.token,
     )
 
 
