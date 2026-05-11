@@ -22,7 +22,7 @@ Legend: ✅ done · ❌ to do · ⏳ partial · 🚫 strategic decision pending
 | --- | --- | --- |
 | Galaxy publication ≥ 1.0.0 | ❌ | Currently 0.1.0. Cut 1.0.0 once the other gaps are closed and the collection has accrued real-world feedback. |
 | `modules/`, `module_utils/`, `plugins/` GPL-3.0-or-later compatible | ✅ | Dual-licence applied: `plugins/modules/` + `plugins/module_utils/` stay EUPL-1.2 (GPL-3.0-compatible via Article 5), `plugins/lookup/` + `plugins/doc_fragments/` are GPL-3.0-or-later (strict). SPDX headers everywhere. See [`LICENSE.md`](LICENSE.md). |
-| `module_utils` file names leading underscore (internal-only marker) | ❌ | Rename `plugins/module_utils/technitium.py` → `plugins/module_utils/_technitium.py` + update every import. Breaking change for any external consumer that imports the helper directly. |
+| `module_utils` file names leading underscore (internal-only marker) | N/A | Spec only requires the `_` prefix **when a module_util is marked internal-only**. We intentionally keep `plugins/module_utils/technitium.py` as a **public API** so external collections targeting Technitium can reuse `TechnitiumClient`. The stability commitment (no breaking changes outside major releases) is documented in the file's docstring. |
 | Forum public tag corresponding to the collection | ❌ | Create `community-technitium` tag the day of the forum topic. |
 | README communication section referencing the Forum | ✅ | Added in v0.1.0. |
 | `ansible-collections` repo branch protections (linear history, no merge commits, no bypass) | ❌ | Only relevant once the repo is transferred to the org. |
@@ -52,7 +52,7 @@ Legend: ✅ done · ❌ to do · ⏳ partial · 🚫 strategic decision pending
    licences there, and EUPL-1.2 is compatible via Article 5), GPL-3.0-or-later
    for `plugins/lookup/` and `plugins/doc_fragments/` where the spec is strict.
    See [`LICENSE.md`](LICENSE.md).
-2. **Rename `module_utils/technitium.py` to `_technitium.py`?** Required by the checklist to mark module_utils as internal. Cost is one breaking import-path change; trivial to do before any external consumer adopts the helper.
+2. **Rename `module_utils/technitium.py` to `_technitium.py`?** No — resolved. The helper is intentionally a **public API**: external collections targeting Technitium can reuse `TechnitiumClient`. The `_` prefix in the spec is conditional on marking the file internal-only, which we deliberately choose not to do.
 3. **Cut 1.0.0 when?** Plan: after at least one external user (other than `mipsou-infra/pra-dns-stack`) has been on a tagged version for a sprint.
 
 ## Forum post template (to paste when ready)

@@ -2,6 +2,23 @@
 # Copyright (c) 2026, mipsou.technitium contributors
 # Licensed under the EUPL-1.2 (see LICENSE)
 # SPDX-License-Identifier: EUPL-1.2
+#
+# PUBLIC API.
+#
+# This module_utils is intentionally *not* prefixed with a leading underscore.
+# `TechnitiumClient`, `TechnitiumError`, `is_zone_listed` and
+# `common_argument_spec` are part of the collection's public surface — any
+# Ansible content (other collections, in-tree roles, custom modules) is
+# welcome to import them.
+#
+# Stability commitment, following SemVer for the collection itself:
+#
+# - Breaking changes to the symbols above ship only in a major release.
+# - Anything starting with `_` (e.g. `_request`, `_build_body`) is internal
+#   and may change at any time.
+# - New optional kwargs may be added in minor releases.
+#
+# See LICENSE.md for the dual-licence split that covers this file.
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
