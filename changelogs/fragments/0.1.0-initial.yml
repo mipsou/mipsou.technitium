@@ -1,0 +1,21 @@
+---
+release_summary: |
+  Initial release of the ``mipsou.technitium`` Ansible collection. Provides
+  idempotent modules to manage a Technitium DNS Server through its HTTP API,
+  including bootstrap of fresh containers (admin/admin auto-rotation) and the
+  domain-list, blocklist and per-zone primitives that previously required
+  hand-rolled ``uri`` tasks with multiple HTTP-200-but-failed workarounds.
+
+major_changes:
+  - "Initial implementation: ``session``, ``setting``, ``blocklist``, ``zone``,
+    ``record``, ``user``, ``allowed_zone``, ``blocked_zone`` modules plus
+    ``record`` lookup."
+  - "Bootstrap flow: ``session`` accepts ``bootstrap_password`` and rotates a
+    fresh container's ``admin/admin`` to the declared password idempotently."
+  - "``blocklist`` performs a stdlib UDP DNS probe (rcode check, no external
+    dependency) to detect that the blocklist is actually active, because
+    Technitium's ``blockListLastUpdatedOn`` field is not a reliable
+    readiness signal."
+  - "``setting`` validates that every ``blockingBypassList`` entry parses as
+    an IP/CIDR — Technitium silently rejects domain entries with HTTP 200
+    and a JSON error payload."

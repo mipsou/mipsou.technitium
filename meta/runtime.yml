@@ -1,0 +1,20 @@
+---
+requires_ansible: '>=2.15.0'
+
+# Group all collection modules so playbooks can set common arguments
+# (typically `session`) once via `module_defaults` instead of repeating
+# them on every task:
+#
+#   module_defaults:
+#     group/mipsou.technitium.all:
+#       session: "{{ tech.session }}"
+action_groups:
+  all:
+    - session
+    - setting
+    - blocklist
+    - zone
+    - record
+    - user
+    - allowed_zone
+    - blocked_zone

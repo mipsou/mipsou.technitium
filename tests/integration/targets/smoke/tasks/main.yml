@@ -1,0 +1,133 @@
+---
+# Smoke test for mipsou.technitium against a real Technitium DNS Server.
+#
+# Expects a fresh Technitium container reachable at technitium_host:technitium_port
+# (default localhost:5380). The session module is exercised with bootstrap
+# admin/admin → rotation to ensure the bootstrap flow works end-to-end.
+#
+# To run locally:
+#   podman run -d --name technitium-test -p 5380:5380 technitium/dns-server:latest
+#   ansible-playbook tests/integration/targets/smoke/tasks/main.yml \
+#       -e technitium_password=changeme \
+#       -e ansible_connection=local
+
+- name: smoke
+  hosts: localhost
+  gather_facts: false
+  module_defaults:
+    group/mipsou.technitium.all:
+      session: "{{ tech.session | default(omit) }}"
+  vars:
+    technitium_host: "{{ technitium_host | default('127.0.0.1') }}"
+    technitium_port: "{{ technitium_port | default(5380) }}"
+    technitium_password: "{{ technitium_password | mandatory }}"
+    test_zone: smoketest.local
+  tasks:
+    - name: Open a session (bootstrap admin/admin → rotate to declared)
+      mipsou.technitium.session:
+        host: "{{ technitium_host }}"
+        port: "{{ technitium_port }}"
+        user: admin
+        password: "{{ technitium_password }}"
+        bootstrap_password: admin
+      register: tech
+
+    - name: Re-open session is idempotent (no rotation second time)
+      mipsou.technitium.session:
+        host: "{{ technitium_host }}"
+        port: "{{ technitium_port }}"
+        user: admin
+        password: "{{ technitium_password }}"
+        bootstrap_password: admin
+      register: tech2
+      failed_when: tech2.rotated | bool
+
+    - name: Create primary zone
+      mipsou.technitium.zone:
+        name: "{{ test_zone }}"
+        type: Primary
+        state: present
+      register: zone_create
+
+    - name: Re-create zone is idempotent
+      mipsou.technitium.zone:
+        name: "{{ test_zone }}"
+        type: Primary
+        state: present
+      register: zone_create2
+      failed_when: zone_create2.changed | bool
+
+    - name: Add A record
+      mipsou.technitium.record:
+        zone: "{{ test_zone }}"
+        name: "host1.{{ test_zone }}"
+        type: A
+        ip_address: 10.0.0.1
+        ttl: 3600
+      register: rec_add
+
+    - name: Re-add same A record is idempotent
+      mipsou.technitium.record:
+        zone: "{{ test_zone }}"
+        name: "host1.{{ test_zone }}"
+        type: A
+        ip_address: 10.0.0.1
+        ttl: 3600
+      register: rec_add2
+      failed_when: rec_add2.changed | bool
+
+    - name: Add a second A record on the same name (round-robin)
+      mipsou.technitium.record:
+        zone: "{{ test_zone }}"
+        name: "host1.{{ test_zone }}"
+        type: A
+        ip_address: 10.0.0.2
+      register: rec_rr
+      failed_when: not rec_rr.changed
+
+    - name: Set DNSSEC validation off and back on
+      mipsou.technitium.setting:
+        settings:
+          dnssecValidation: false
+      register: set_off
+      failed_when: not set_off.changed
+
+    - name: Re-apply same setting is idempotent
+      mipsou.technitium.setting:
+        settings:
+          dnssecValidation: false
+      register: set_off2
+      failed_when: set_off2.changed | bool
+
+    - name: Reject domain entry in blockingBypassList
+      mipsou.technitium.setting:
+        settings:
+          blockingBypassList:
+            - netflix.com
+      register: bypass_bad
+      ignore_errors: true
+      failed_when: bypass_bad is success
+
+    - name: Delete record
+      mipsou.technitium.record:
+        zone: "{{ test_zone }}"
+        name: "host1.{{ test_zone }}"
+        type: A
+        ip_address: 10.0.0.1
+        state: absent
+      register: rec_del
+      failed_when: not rec_del.changed
+
+    - name: Delete zone
+      mipsou.technitium.zone:
+        name: "{{ test_zone }}"
+        state: absent
+      register: zone_del
+      failed_when: not zone_del.changed
+
+    - name: Re-delete zone is idempotent
+      mipsou.technitium.zone:
+        name: "{{ test_zone }}"
+        state: absent
+      register: zone_del2
+      failed_when: zone_del2.changed | bool

@@ -1,0 +1,27 @@
+---
+namespace: mipsou
+name: technitium
+version: 0.1.0
+readme: README.md
+authors:
+  - mipsou (Groupe-Celios) <chpujol@gmail.com>
+description: >-
+  Ansible modules and plugins to manage Technitium DNS Server via its HTTP API
+  (sessions, settings, zones, records, blocklists, users, allow/block lists).
+license:
+  - EUPL-1.2
+tags:
+  - dns
+  - technitium
+  - networking
+  - infrastructure
+  - blocklist
+dependencies: {}
+repository: https://github.com/mipsou/mipsou.technitium
+documentation: https://github.com/mipsou/mipsou.technitium/tree/main/docs
+homepage: https://github.com/mipsou/mipsou.technitium
+issues: https://github.com/mipsou/mipsou.technitium/issues
+build_ignore:
+  - .gitignore
+  - .gitlab-ci.yml
+  - tests/output

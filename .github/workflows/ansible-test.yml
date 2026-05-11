@@ -1,0 +1,87 @@
+---
+name: ansible-test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Weekly run to catch upstream breakage in ansible-core.
+    - cron: '0 6 * * 1'
+
+jobs:
+  sanity:
+    name: Sanity (ansible ${{ matrix.ansible }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ansible:
+          - stable-2.15
+          - stable-2.16
+          - stable-2.17
+          - devel
+        python:
+          - "3.11"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: ansible_collections/mipsou/technitium
+
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install ansible-core (${{ matrix.ansible }})
+        run: |
+          pip install \
+            "https://github.com/ansible/ansible/archive/${{ matrix.ansible }}.tar.gz" \
+            --disable-pip-version-check
+
+      - name: Run sanity tests
+        run: ansible-test sanity --docker default --color
+        working-directory: ansible_collections/mipsou/technitium
+
+  integration:
+    name: Integration smoke test
+    runs-on: ubuntu-latest
+    services:
+      technitium:
+        image: technitium/dns-server:latest
+        ports:
+          - 5380:5380
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: ansible_collections/mipsou/technitium
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ansible-core
+        run: pip install ansible-core
+
+      - name: Wait for Technitium to be ready
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:5380/api/user/login?user=admin\&pass=admin >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Technitium did not become ready in time" >&2
+          exit 1
+
+      - name: Run smoke test
+        env:
+          ANSIBLE_COLLECTIONS_PATH: ${{ github.workspace }}
+        run: |
+          ansible-playbook \
+            ansible_collections/mipsou/technitium/tests/integration/targets/smoke/tasks/main.yml \
+            -e technitium_password=test \
+            -e ansible_connection=local
