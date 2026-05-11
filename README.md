@@ -82,7 +82,9 @@ Every quirk above maps to a dedicated module that handles it idempotently.
 
 ## License
 
-Licensed under the [EUPL-1.2](LICENSE) — European Union Public Licence v1.2. A re-licensing to **GPL-3.0-or-later** is on the roadmap if/when the collection is proposed for adoption into the `community.*` namespace (see [`PROPOSAL.md`](PROPOSAL.md)).
+Dual-licensed — see [`LICENSE.md`](LICENSE.md) for the full per-path split.
+
+In short: **EUPL-1.2** for `plugins/modules/`, `plugins/module_utils/`, and the rest of the repository; **GPL-3.0-or-later** for `plugins/lookup/` and `plugins/doc_fragments/` (where Ansible's [community collection inclusion spec](https://docs.ansible.com/ansible/devel/community/collection_contributors/collection_requirements.html) requires the strict GPL licence rather than a compatible one). Every source file carries an SPDX-License-Identifier header.
 
 ## Links
 

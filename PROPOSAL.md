@@ -21,7 +21,7 @@ Legend: ✅ done · ❌ to do · ⏳ partial · 🚫 strategic decision pending
 | MUST | Status | Notes |
 | --- | --- | --- |
 | Galaxy publication ≥ 1.0.0 | ❌ | Currently 0.1.0. Cut 1.0.0 once the other gaps are closed and the collection has accrued real-world feedback. |
-| `modules/`, `module_utils/`, `plugins/` GPL-3.0-or-later compatible | 🚫 | Collection is EUPL-1.2. Re-licence requires explicit author agreement (only `mipsou` so far, no external contributors yet, so feasible). |
+| `modules/`, `module_utils/`, `plugins/` GPL-3.0-or-later compatible | ✅ | Dual-licence applied: `plugins/modules/` + `plugins/module_utils/` stay EUPL-1.2 (GPL-3.0-compatible via Article 5), `plugins/lookup/` + `plugins/doc_fragments/` are GPL-3.0-or-later (strict). SPDX headers everywhere. See [`LICENSE.md`](LICENSE.md). |
 | `module_utils` file names leading underscore (internal-only marker) | ❌ | Rename `plugins/module_utils/technitium.py` → `plugins/module_utils/_technitium.py` + update every import. Breaking change for any external consumer that imports the helper directly. |
 | Forum public tag corresponding to the collection | ❌ | Create `community-technitium` tag the day of the forum topic. |
 | README communication section referencing the Forum | ✅ | Added in v0.1.0. |
@@ -47,7 +47,11 @@ Legend: ✅ done · ❌ to do · ⏳ partial · 🚫 strategic decision pending
 
 ### Strategic decisions to settle
 
-1. **Re-licence to GPL-3.0-or-later?** EUPL-1.2 is OSI-approved and Debian-free but is *not* GPL-compatible per gnu.org, which the inclusion checklist requires for `plugins/`. Decision: re-licence at the v1.0 cut if/when adoption is on the table.
+1. **Re-licence to GPL-3.0-or-later?** Already resolved with a **dual-licence
+   split**: EUPL-1.2 for the bulk of the code (the spec allows GPL-3.0-compatible
+   licences there, and EUPL-1.2 is compatible via Article 5), GPL-3.0-or-later
+   for `plugins/lookup/` and `plugins/doc_fragments/` where the spec is strict.
+   See [`LICENSE.md`](LICENSE.md).
 2. **Rename `module_utils/technitium.py` to `_technitium.py`?** Required by the checklist to mark module_utils as internal. Cost is one breaking import-path change; trivial to do before any external consumer adopts the helper.
 3. **Cut 1.0.0 when?** Plan: after at least one external user (other than `mipsou-infra/pra-dns-stack`) has been on a tagged version for a sprint.
 

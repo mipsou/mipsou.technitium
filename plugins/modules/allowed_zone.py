@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2026, mipsou.technitium contributors
 # Licensed under the EUPL-1.2 (see LICENSE)
+# SPDX-License-Identifier: EUPL-1.2
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
