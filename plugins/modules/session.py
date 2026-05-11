@@ -115,6 +115,8 @@ rotated:
   type: bool
 '''
 
+import time
+
 from ansible.module_utils.basic import AnsibleModule
 
 from ansible_collections.mipsou.technitium.plugins.module_utils.technitium import (
@@ -203,13 +205,19 @@ def main():
                     msg='Password rotation after bootstrap failed: {0}'.format(rot_exc),
                     error_message=rot_exc.error_message,
                 )
-            # Technitium keeps the bootstrap session valid after a
-            # changePassword (tokens are session identifiers, not tied to the
-            # current password). Re-authenticating with the new password used
-            # to be done here, but in practice Technitium then returns a
-            # token that gets rejected on the very next call — likely an
-            # internal session invalidation race. Reusing the bootstrap token
-            # matches what the upstream PRA role does and works reliably.
+            # Technitium invalidates the session that performed changePassword
+            # and needs a brief moment before a fresh login produces a token
+            # that survives subsequent calls. Without the sleep, the immediate
+            # re-login returns a token rejected as 'invalid-token' on the
+            # very next API call.
+            time.sleep(1)
+            try:
+                client.login(p['user'], p['password'])
+            except TechnitiumError as relogin_exc:
+                module.fail_json(
+                    msg='Re-login after password rotation failed: {0}'.format(relogin_exc),
+                    error_message=relogin_exc.error_message,
+                )
             rotated = True
 
     # Ansible only masks values flagged no_log in the argument_spec on input.
