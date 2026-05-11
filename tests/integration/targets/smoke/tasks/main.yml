@@ -9,12 +9,6 @@
 #   ansible-playbook tests/integration/targets/smoke/tasks/main.yml \
 #       -e technitium_password=changeme \
 #       -e ansible_connection=local
-#
-# Note on session lifetimes: Technitium can revoke older sessions when a new
-# login happens for the same user, so we deliberately use the *most recent*
-# session token for the rest of the play (`tech` is overwritten by the second
-# login). The idempotence check on session is the rotation flag (`rotated`),
-# not the token identity.
 
 - name: smoke
   hosts: localhost
@@ -22,45 +16,14 @@
   vars:
     test_zone: smoketest.local
   tasks:
-    # Debug step: login admin/admin manually via uri to capture a known-good
-    # baseline token. Compare with the one our session module produces.
-    - name: Baseline login admin/admin via uri
-      ansible.builtin.uri:
-        url: "http://{{ technitium_host | default('127.0.0.1') }}:{{ technitium_port | default(5380) }}/api/user/login?user=admin&pass=admin&includeInfo=true"
-        method: GET
-        return_content: true
-      register: baseline_login
-
-    - name: Baseline probe with that token
-      ansible.builtin.uri:
-        url: "http://{{ technitium_host | default('127.0.0.1') }}:{{ technitium_port | default(5380) }}/api/zones/list?token={{ baseline_login.json.token }}"
-        method: GET
-        return_content: true
-      register: baseline_probe
-
-    - name: Show baseline results
-      ansible.builtin.debug:
-        msg: "login_status={{ baseline_login.json.status }} token_len={{ baseline_login.json.token | length }} probe_status={{ baseline_probe.json.status }}"
-
-    - name: Open a session via our module (NO rotation, declared password=admin)
+    - name: Open a session (bootstrap admin/admin -> rotate to declared)
       mipsou.technitium.session:
         host: "{{ technitium_host | default('127.0.0.1') }}"
         port: "{{ technitium_port | default(5380) }}"
         user: admin
-        password: admin
+        password: "{{ technitium_password }}"
+        bootstrap_password: admin
       register: tech
-
-    - name: Show session module output
-      ansible.builtin.debug:
-        msg: "session_token_len={{ tech.session.token | length }} bootstrap_used={{ tech.bootstrap_used }} rotated={{ tech.rotated }} payload_keys={{ tech._debug_login_payload_keys }} token_repr={{ tech._debug_token_repr }}"
-
-    - name: Probe with session module token
-      ansible.builtin.uri:
-        url: "http://{{ tech.session.host }}:{{ tech.session.port }}/api/zones/list?token={{ tech.session.token }}"
-        method: GET
-        return_content: true
-      register: probe
-      failed_when: probe.json.status != 'ok'
 
     - name: Create primary zone
       mipsou.technitium.zone:
@@ -69,6 +32,7 @@
         type: Primary
         state: present
       register: zone_create
+      failed_when: not zone_create.changed
 
     - name: Re-create zone is idempotent
       mipsou.technitium.zone:
@@ -88,6 +52,7 @@
         ip_address: 10.0.0.1
         ttl: 3600
       register: rec_add
+      failed_when: not rec_add.changed
 
     - name: Re-add same A record is idempotent
       mipsou.technitium.record:
@@ -110,7 +75,7 @@
       register: rec_rr
       failed_when: not rec_rr.changed
 
-    - name: Set DNSSEC validation off and back on
+    - name: Set DNSSEC validation off
       mipsou.technitium.setting:
         session: "{{ tech.session }}"
         settings:
