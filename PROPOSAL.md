@@ -1,33 +1,51 @@
 # Proposal: promote `mipsou.technitium` to `community.technitium`
 
-> This file is a draft for the future submission to
-> [`ansible-collections/overview`](https://github.com/ansible-collections/overview).
-> It is **not** part of the published collection — it lives in the repo so
-> the rationale stays close to the code. Move it to a GitHub issue under
-> ansible-collections/overview when ready to submit.
+> Draft for the future submission to **forum.ansible.com** with tag
+> [`coll-repo-request`](https://forum.ansible.com/tag/coll-repo-request).
+> Older docs may still reference an `ansible-collections/overview` PR
+> process — that has been superseded by the forum-based flow.
 
 ## Status
 
-**Pre-submission.** The collection is currently published as `mipsou.technitium`
-on Ansible Galaxy. Promotion to the official `community.technitium` namespace
-will be proposed once the collection has:
+**Pre-submission.** Currently published as `mipsou.technitium` on Ansible
+Galaxy. We will request a `community.technitium` repo on the forum once the
+collection has:
 
 - a track record of releases (≥ 0.2.0 with bugfixes from real-world usage)
 - a documented user beyond the initial author (PRA stack at minimum, ideally
   one external consumer)
-- complete sanity & integration test coverage in CI
+- complete sanity & integration test coverage in CI (already in place for
+  v0.1.0 — `ansible-test sanity` 2.15/2.16/2.17 + integration smoke against
+  a real Technitium container)
 - a co-maintainer or explicit commitment from another contributor
 
-## Summary
+## Forum post template (to paste when ready)
 
-`mipsou.technitium` is an Ansible collection of modules and lookup plugins to
-manage a [Technitium DNS Server](https://technitium.com/dns/) through its
-HTTP API. It exists because every team running Technitium under Ansible
-re-derives the same workarounds for the API's quirks (HTTP-200 errors, list
-parameter serialisation, fresh-container bootstrap, unreliable readiness
-signals — see `docs/api_quirks.md`).
+```
+Title: Request for a new collection: community.technitium
 
-There is no existing `community.*` collection for Technitium.
+Hi,
+
+I'd like a new collection repo in the community namespace please.
+
+Name: community.technitium
+Source: https://github.com/mipsou/mipsou.technitium (currently published as
+mipsou.technitium on Galaxy)
+Maintainer: @mipsou
+
+Scope: Ansible modules and plugins to manage a Technitium DNS Server through
+its HTTP API. Eight modules (session, setting, blocklist, zone, record, user,
+allowed_zone, blocked_zone) plus a lookup plugin. Zero external Python
+dependencies. CI: sanity matrix + integration smoke against a real
+technitium/dns-server container. Documents 10 Technitium API quirks the
+collection abstracts away.
+
+No prior community.* collection targets Technitium DNS Server.
+
+Thanks!
+```
+
+Tag the post with `coll-repo-request`.
 
 ## Why community.technitium
 
@@ -35,32 +53,18 @@ There is no existing `community.*` collection for Technitium.
   collection targets Technitium. The namespace is unclaimed.
 - **API-driven, no host coupling**: the collection talks only to the HTTP
   API. It works against containers, bare-metal installs and the Windows
-  Service install identically. No platform-specific code.
+  Service install identically.
 - **Idempotency story is solid**: every module follows the GET-diff-POST
   pattern, validated by the integration smoke test under
   `tests/integration/targets/smoke/`. Re-runs report `changed=false`.
-- **Captures expert knowledge**: the seven quirks documented in
-  `docs/api_quirks.md` represent real production incidents that a generic
-  `uri`-based approach silently mishandles. The collection encodes them
-  once.
-
-## Module inventory (v0.1.0)
-
-| Module / plugin | Scope |
-| --- | --- |
-| `session` (module) | Authenticate; handle fresh-container `admin/admin` bootstrap + rotation. |
-| `setting` (module) | Read/diff/write `/api/settings/{get,set}`. Validates `blockingBypassList` is IP/CIDR. |
-| `blocklist` (module) | `blockListUrls` state-based; force-update; DNS probe to detect activation. |
-| `zone` (module) | Create/delete Primary/Secondary/Stub/Forwarder/(Secondary)Catalog zones. |
-| `record` (module) | A/AAAA/NS/CNAME/PTR/MX/TXT/SRV add/delete, keyed on `(name, type, value)`. |
-| `user` (module) | Create/update/delete admin users; idempotent password rotation via probe-login. |
-| `allowed_zone` (module) | Add/remove from `/api/allowed/*`. |
-| `blocked_zone` (module) | Add/remove from `/api/blocked/*`. |
-| `record` (lookup) | Resolve DNS records via API from Jinja2. |
+- **Captures expert knowledge**: 10 quirks documented in
+  `docs/api_quirks.md`, three of them discovered while bootstrapping the
+  collection's CI (login Content-Type, fetch_url session invalidation,
+  changePassword race).
 
 ## Governance after promotion
 
-If promoted, the collection moves to `github.com/ansible-collections/community.technitium`.
+If accepted, the repo moves to `github.com/ansible-collections/community.technitium`.
 Initial maintainer commits to:
 
 - triage incoming issues within 14 days
@@ -73,7 +77,6 @@ Initial maintainer commits to:
 
 - Naming: `community.technitium` vs `community.technitium_dns`. The shorter
   form is consistent with `community.docker`, `community.postgresql`. Going
-  with the shorter unless there is a precedent suggesting otherwise.
-- License: the collection is currently EUPL-1.2. `community.*` collections
-  are typically GPL-3.0-or-later. Re-licensing is on the table if it is a
-  hard requirement.
+  with the shorter unless precedent suggests otherwise.
+- License: currently EUPL-1.2. `community.*` collections are typically
+  GPL-3.0-or-later. Re-licensing is on the table if it is a hard requirement.
