@@ -73,9 +73,16 @@ Every quirk above maps to a dedicated module that handles it idempotently.
         state: present
 ```
 
+## Communication
+
+- **Need help?** Ask in the [Get Help](https://forum.ansible.com/c/help/6/none) category on the Ansible Forum, mentioning `mipsou.technitium` in the post so maintainers see it.
+- **Project discussion** happens under the [`mipsou-technitium`](https://forum.ansible.com/tag/mipsou-technitium) tag on the Forum (use that tag when you start a topic in *Project Discussions*). The tag will be created on first use.
+- **Bug reports & feature requests:** [GitHub Issues](https://github.com/mipsou/mipsou.technitium/issues) on this repository.
+- **Code of Conduct:** see [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) — we follow the [Ansible Community Code of Conduct](https://docs.ansible.com/ansible/latest/community/code_of_conduct.html).
+
 ## License
 
-Licensed under the [EUPL-1.2](LICENSE) — European Union Public Licence v1.2.
+Licensed under the [EUPL-1.2](LICENSE) — European Union Public Licence v1.2. A re-licensing to **GPL-3.0-or-later** is on the roadmap if/when the collection is proposed for adoption into the `community.*` namespace (see [`PROPOSAL.md`](PROPOSAL.md)).
 
 ## Links
 

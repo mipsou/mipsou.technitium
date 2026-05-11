@@ -1,3 +1,11 @@
+# Ignored sanity checks for ansible-core stable-2.15. Each entry must be
+# justified per docs.ansible.com/.../collection_contributors/collection_requirements.html
+# All `missing-gplv3-license` entries: collection is licensed EUPL-1.2 (see
+# LICENSE + galaxy.yml). Re-licence to GPL-3.0-or-later is on the v1.0 roadmap.
+# `LICENSE no-smart-quotes`: the EUPL-1.2 canonical text contains Unicode
+# typographic quotes; we cannot rewrite a copyrighted licence file.
+# Python 3.9+ on the controller; we use urllib.parse / ipaddress (Python 3.3+)
+# which break the legacy 2.7 import scan but never run there at runtime.
 LICENSE no-smart-quotes
 plugins/modules/allowed_zone.py validate-modules:missing-gplv3-license
 plugins/modules/blocked_zone.py validate-modules:missing-gplv3-license
