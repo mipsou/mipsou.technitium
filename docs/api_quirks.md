@@ -101,3 +101,25 @@ succeed directly, so the flow is idempotent.
 Authenticated calls take `?token=<token>` in the URL. Putting it in a header
 is silently ignored. The token is alphanumeric hex, so URL encoding rarely
 matters in practice — but always pass it through `urlencode` to be safe.
+
+---
+
+## 8. `/api/user/login` returns a bogus token under POST + form Content-Type
+
+`POST /api/user/login` with `Content-Type: application/x-www-form-urlencoded`
+and `user=admin&pass=admin&includeInfo=true` in the body returns HTTP 200 and
+a JSON payload that contains a 35-character `token`. Every subsequent call
+using that token is rejected with `{"status": "invalid-token", "errorMessage":
+"Invalid token or session expired."}`. A `GET /api/user/login?user=admin&...`
+with the *same* parameters in the query string returns the expected 64-char
+hex token that actually works.
+
+The trigger appears to be the `Content-Type: application/x-www-form-urlencoded`
+header — even a GET request with that header set yields the broken token.
+Diagnosed in CI by comparing baseline `ansible.builtin.uri` (which only sets
+Content-Type when there is a body) against `ansible.module_utils.urls.fetch_url`
+with a static `Content-Type` header.
+
+**Module behaviour**: `module_utils/technitium.py` uses GET for
+`/api/user/login`, `/api/user/logout`, and `/api/user/changePassword`, and
+only sets `Content-Type` when an actual body is being sent (POST).
