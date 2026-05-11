@@ -203,16 +203,13 @@ def main():
                     msg='Password rotation after bootstrap failed: {0}'.format(rot_exc),
                     error_message=rot_exc.error_message,
                 )
-            # After rotation the existing token typically remains valid, but
-            # re-authenticate explicitly so downstream tasks use a token that
-            # matches the declared password.
-            try:
-                client.login(p['user'], p['password'])
-            except TechnitiumError as relogin_exc:
-                module.fail_json(
-                    msg='Re-login after password rotation failed: {0}'.format(relogin_exc),
-                    error_message=relogin_exc.error_message,
-                )
+            # Technitium keeps the bootstrap session valid after a
+            # changePassword (tokens are session identifiers, not tied to the
+            # current password). Re-authenticating with the new password used
+            # to be done here, but in practice Technitium then returns a
+            # token that gets rejected on the very next call — likely an
+            # internal session invalidation race. Reusing the bootstrap token
+            # matches what the upstream PRA role does and works reliably.
             rotated = True
 
     # Ansible only masks values flagged no_log in the argument_spec on input.
