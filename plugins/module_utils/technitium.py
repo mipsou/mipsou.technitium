@@ -17,8 +17,6 @@
 # - Anything starting with `_` (e.g. `_request`, `_build_body`) is internal
 #   and may change at any time.
 # - New optional kwargs may be added in minor releases.
-#
-# See LICENSE.md for the dual-licence split that covers this file.
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type

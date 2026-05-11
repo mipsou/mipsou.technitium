@@ -1,92 +1,101 @@
 # Ansible Collection — `mipsou.technitium`
 
-Ansible modules and plugins to manage [Technitium DNS Server](https://technitium.com/dns/)
-through its HTTP API: sessions, settings, zones, records, blocklists, users.
+[![ansible-test](https://github.com/mipsou/mipsou.technitium/actions/workflows/ansible-test.yml/badge.svg)](https://github.com/mipsou/mipsou.technitium/actions/workflows/ansible-test.yml)
+[![License: EUPL-1.2](https://img.shields.io/badge/License-EUPL--1.2-blue.svg)](https://joinup.ec.europa.eu/page/eupl-text-11-12)
+[![Galaxy](https://img.shields.io/badge/galaxy-mipsou.technitium-660198.svg)](https://galaxy.ansible.com/ui/repo/published/mipsou/technitium/)
 
-> **Status**: pre-release (v0.1.0), built around concrete bugs / quirks found
-> while driving Technitium from raw `uri` calls in production. See
-> [`docs/api_quirks.md`](docs/api_quirks.md) for the surprising behaviours this
-> collection abstracts away.
+Declarative, idempotent management of a [Technitium DNS Server](https://technitium.com/dns/)
+via its HTTP API. Built for PRA / disaster-recovery workflows and homelab
+infra-as-code.
 
-## Why this collection
+> First Ansible collection for the Technitium API. Replaces raw `uri` calls
+> (with all their HTTP-200-but-failed quirks) with proper state-based modules
+> supporting `check_mode` and `diff`.
 
-Technitium has no official Ansible collection. Talking to its API with the
-generic `uri` module works, but several quirks make it painful and unsafe:
+## Scope (v0.1.0)
 
-- `blockingBypassList` accepts only CIDR network addresses, not domains — and
-  rejects domains with HTTP 200 + an error payload (silent failure with `uri`).
-- `blockListUrls` only accepts repeated form fields (`urls=a&urls=b`), not
-  comma- or newline-separated lists.
-- `changePassword` requires both `pass` and `newPass`.
-- `blockListLastUpdatedOn` is not reliably updated after a force-refresh.
-- Fresh containers start with `admin/admin` and must be rotated on first boot;
-  the official image does not honour `DNS_SERVER_ADMIN_PASSWORD`.
-
-Every quirk above maps to a dedicated module that handles it idempotently.
-
-## Modules (v0.1.0 scope)
-
-| Module | Status | Purpose |
-| --- | --- | --- |
-| `session` | P0 | Auth + token. Bootstraps `admin/admin` and rotates automatically. |
-| `setting` | P0 | Get/set server settings with diff. |
-| `blocklist` | P0 | Manage `blockListUrls` (state-based), wait for active. |
-| `zone` | P0 | Create/delete primary, secondary, forwarder, stub zones. |
-| `record` | P0 | A / AAAA / NS / CNAME / PTR / MX / TXT / SRV. Match key is `(name, type, value)`; TTL / comments updates are not in v0.1 — delete + recreate to change them. |
-| `user` | P1 | Manage users, idempotent password rotation (verified by probe-login). |
-| `allowed_zone` | P1 | Manage entries in the Allowed Zones list (`/api/allowed/*`). |
-| `blocked_zone` | P1 | Manage entries in the Blocked Zones list (`/api/blocked/*`). |
-
-## Lookup plugins
-
-| Lookup | Purpose |
+| Module | Purpose |
 | --- | --- |
-| `record` | `lookup('mipsou.technitium.record', 'host.example', type='A', session=tech.session)` |
+| [`mipsou.technitium.session`](plugins/modules/session.py) | Auth + token; bootstraps fresh `admin/admin` containers and rotates the password |
+| [`mipsou.technitium.setting`](plugins/modules/setting.py) | Read/diff/write server settings via `/api/settings/{get,set}` |
+| [`mipsou.technitium.blocklist`](plugins/modules/blocklist.py) | Manage `blockListUrls` state-based, with a stdlib UDP DNS probe to detect activation |
+| [`mipsou.technitium.zone`](plugins/modules/zone.py) | Create / delete Primary / Secondary / Stub / Forwarder / Catalog zones |
+| [`mipsou.technitium.record`](plugins/modules/record.py) | A / AAAA / NS / CNAME / PTR / MX / TXT / SRV records, keyed on `(name, type, value)` |
+| [`mipsou.technitium.user`](plugins/modules/user.py) | Manage user accounts; idempotent password rotation via probe-login |
+| [`mipsou.technitium.allowed_zone`](plugins/modules/allowed_zone.py) | Entries in `/api/allowed/*` (domain allow-list) |
+| [`mipsou.technitium.blocked_zone`](plugins/modules/blocked_zone.py) | Entries in `/api/blocked/*` (manual block-list) |
+
+Plus one lookup plugin (`mipsou.technitium.record`) for Jinja2 DNS queries
+through the API.
+
+A shared `module_utils.technitium.TechnitiumClient` handles auth, the eight
+Technitium API quirks documented in [`docs/api_quirks.md`](docs/api_quirks.md),
+and the `open_url`-based HTTP path that avoids `fetch_url`'s session-side
+effects.
+
+## Requirements
+
+- Ansible `>= 2.15`
+- Python `>= 3.9` on the controller
+- A Technitium DNS Server reachable over HTTP(S) — works against
+  `technitium/dns-server:latest` containers, bare-metal installs and the
+  Windows Service install identically.
+
+## Install
+
+```bash
+ansible-galaxy collection install mipsou.technitium
+```
 
 ## Quick start
 
 ```yaml
-- hosts: dns
+- hosts: localhost
+  gather_facts: false
   tasks:
-    - mipsou.technitium.session:
+    - name: Open a session (bootstraps admin/admin on a fresh container)
+      mipsou.technitium.session:
         host: 192.168.1.10
-        port: 5380
         user: admin
         password: "{{ vault_technitium_admin_password }}"
         bootstrap_password: admin
-        rotate_if_bootstrap: true
       register: tech
 
-    - mipsou.technitium.zone:
+    - name: Create a primary zone
+      mipsou.technitium.zone:
         session: "{{ tech.session }}"
         name: example.lan
-        type: primary
+        type: Primary
         state: present
 
-    - mipsou.technitium.record:
+    - name: A record for ns1
+      mipsou.technitium.record:
         session: "{{ tech.session }}"
         zone: example.lan
         name: ns1.example.lan
         type: A
-        value: 192.168.1.10
+        ip_address: 192.168.1.10
         ttl: 3600
-        state: present
 ```
+
+See [`tests/integration/targets/smoke/tasks/main.yml`](tests/integration/targets/smoke/tasks/main.yml)
+for a fuller end-to-end walkthrough.
 
 ## Communication
 
-- **Need help?** Ask in the [Get Help](https://forum.ansible.com/c/help/6/none) category on the Ansible Forum, mentioning `mipsou.technitium` in the post so maintainers see it.
-- **Project discussion** happens under the [`mipsou-technitium`](https://forum.ansible.com/tag/mipsou-technitium) tag on the Forum (use that tag when you start a topic in *Project Discussions*). The tag will be created on first use.
-- **Bug reports & feature requests:** [GitHub Issues](https://github.com/mipsou/mipsou.technitium/issues) on this repository.
-- **Code of Conduct:** see [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) — we follow the [Ansible Community Code of Conduct](https://docs.ansible.com/ansible/latest/community/code_of_conduct.html).
+- **Need help?** Ask in the [Get Help](https://forum.ansible.com/c/help/6/none)
+  category on the Ansible Forum, mentioning `mipsou.technitium` in the post.
+- **Project discussion** happens under the
+  [`mipsou-technitium`](https://forum.ansible.com/tag/mipsou-technitium) tag
+  on the Forum (create the tag on first use).
+- **Bug reports & feature requests**:
+  [GitHub Issues](https://github.com/mipsou/mipsou.technitium/issues).
+- **Code of Conduct**: see [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) — we
+  follow the
+  [Ansible Community Code of Conduct](https://docs.ansible.com/ansible/latest/community/code_of_conduct.html).
 
 ## License
 
-Dual-licensed — see [`LICENSE.md`](LICENSE.md) for the full per-path split.
-
-In short: **EUPL-1.2** for `plugins/modules/`, `plugins/module_utils/`, and the rest of the repository; **GPL-3.0-or-later** for `plugins/lookup/` and `plugins/doc_fragments/` (where Ansible's [community collection inclusion spec](https://docs.ansible.com/ansible/devel/community/collection_contributors/collection_requirements.html) requires the strict GPL licence rather than a compatible one). Every source file carries an SPDX-License-Identifier header.
-
-## Links
-
-- Technitium DNS API documentation: <https://github.com/TechnitiumSoftware/DnsServer/blob/master/APIDOCS.md>
-- Container image: `docker.io/technitium/dns-server:latest`
+EUPL-1.2. See [`LICENSE`](LICENSE). Relicensing to GPL-3.0-or-later is
+planned at the moment the collection is adopted into the `community.*`
+namespace (see [`PROPOSAL.md`](PROPOSAL.md)).
