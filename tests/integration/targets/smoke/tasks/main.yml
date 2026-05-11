@@ -40,6 +40,18 @@
       ansible.builtin.debug:
         msg: "host={{ tech.session.host }} port={{ tech.session.port }} token_len={{ tech.session.token | length }}"
 
+    - name: Direct probe via uri (does the token even work outside our module_utils?)
+      ansible.builtin.uri:
+        url: "http://{{ tech.session.host }}:{{ tech.session.port }}/api/zones/list?token={{ tech.session.token }}"
+        method: GET
+        return_content: true
+      register: probe
+      failed_when: probe.json.status != 'ok'
+
+    - name: Show probe result
+      ansible.builtin.debug:
+        msg: "probe.status={{ probe.json.status }} zones_count={{ probe.json.response.zones | default([]) | length }}"
+
     - name: Create primary zone
       mipsou.technitium.zone:
         session: "{{ tech.session }}"
