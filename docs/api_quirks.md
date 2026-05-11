@@ -123,3 +123,38 @@ with a static `Content-Type` header.
 **Module behaviour**: `module_utils/technitium.py` uses GET for
 `/api/user/login`, `/api/user/logout`, and `/api/user/changePassword`, and
 only sets `Content-Type` when an actual body is being sent (POST).
+
+---
+
+## 9. `fetch_url` silently invalidates Technitium sessions; use `open_url`
+
+Even with the Content-Type fix above, `ansible.module_utils.urls.fetch_url`
+produced login tokens that worked once and then got rejected as
+`invalid-token` on the very next call against the same session. The same
+URL handed to `ansible.builtin.uri` (which is built on `open_url`) worked
+across repeated calls without issue.
+
+Likely cause: `fetch_url` injects extra headers (notably ones related to
+the calling `AnsibleModule`) that Technitium's session machinery interprets
+as a session change.
+
+**Module behaviour**: `module_utils/technitium.py` calls `open_url` directly
+and does not use `fetch_url`. Any future addition that touches the HTTP layer
+should keep that pattern.
+
+---
+
+## 10. `changePassword` invalidates the bootstrap session in unpredictable ways
+
+After a fresh-container bootstrap, the sequence
+`login(admin/admin) → changePassword(admin → declared) → login(admin/declared)`
+yields a token that Technitium rejects as `invalid-token` on the very next
+API call. Neither reusing the bootstrap token nor adding a delay before the
+re-login fixes it reliably. This makes the rotation flow fragile for
+automated tests; we keep the bootstrap code in `session` (it is the actual
+production code path) but do not exercise rotation in CI smoke.
+
+**Workaround**: when rotating in production, pause between the rotation and
+the first downstream API call (a few seconds), or pre-create a permanent API
+token via `/api/admin/sessions/createToken` and authenticate downstream tasks
+with it instead of the session token.

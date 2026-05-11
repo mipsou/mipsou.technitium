@@ -2,12 +2,14 @@
 # Smoke test for mipsou.technitium against a real Technitium DNS Server.
 #
 # Expects a fresh Technitium container reachable at technitium_host:technitium_port
-# (default 127.0.0.1:5380) and the desired admin password in technitium_password.
+# (default 127.0.0.1:5380). Uses the default admin/admin credentials; the
+# bootstrap+rotation flow is exercised manually for now (Technitium has
+# subtle session invalidation behaviour around changePassword we have not
+# fully pinned down — see docs/api_quirks.md).
 #
 # To run locally:
 #   podman run -d --name technitium-test -p 5380:5380 technitium/dns-server:latest
 #   ansible-playbook tests/integration/targets/smoke/tasks/main.yml \
-#       -e technitium_password=changeme \
 #       -e ansible_connection=local
 
 - name: smoke
@@ -16,17 +18,6 @@
   vars:
     test_zone: smoketest.local
   tasks:
-    # Use the container's default admin/admin credentials directly. The
-    # bootstrap+rotation flow is exercised by a dedicated test (see TODO in
-    # tests/integration/targets/rotation/) once we've worked out the exact
-    # Technitium token-lifetime semantics post-changePassword.
-    - name: Baseline login admin/admin via uri (for comparison)
-      ansible.builtin.uri:
-        url: "http://{{ technitium_host | default('127.0.0.1') }}:{{ technitium_port | default(5380) }}/api/user/login?user=admin&pass=admin&includeInfo=true"
-        method: GET
-        return_content: true
-      register: baseline
-
     - name: Open a session
       mipsou.technitium.session:
         host: "{{ technitium_host | default('127.0.0.1') }}"
@@ -34,38 +25,6 @@
         user: admin
         password: admin
       register: tech
-
-    - name: Compare baseline token vs module token
-      ansible.builtin.debug:
-        msg: "baseline={{ baseline.json.token }}  module={{ tech._debug_token }}  equal={{ baseline.json.token == tech._debug_token }}"
-
-    - name: Probe baseline token
-      ansible.builtin.uri:
-        url: "http://{{ technitium_host | default('127.0.0.1') }}:{{ technitium_port | default(5380) }}/api/zones/list?token={{ baseline.json.token }}"
-        method: GET
-        return_content: true
-      register: probe_baseline
-      failed_when: false
-
-    - name: Probe module token
-      ansible.builtin.uri:
-        url: "http://{{ technitium_host | default('127.0.0.1') }}:{{ technitium_port | default(5380) }}/api/zones/list?token={{ tech._debug_token }}"
-        method: GET
-        return_content: true
-      register: probe_module
-      failed_when: false
-
-    - name: Show probe statuses
-      ansible.builtin.debug:
-        msg: "baseline_probe={{ probe_baseline.json.status }} module_probe={{ probe_module.json.status }}"
-
-    - name: Probe the session token via direct uri (sanity check)
-      ansible.builtin.uri:
-        url: "http://{{ tech.session.host }}:{{ tech.session.port }}/api/zones/list?token={{ tech.session.token }}"
-        method: GET
-        return_content: true
-      register: probe
-      failed_when: probe.json.status != 'ok'
 
     - name: Create primary zone
       mipsou.technitium.zone:
