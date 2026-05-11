@@ -14,10 +14,10 @@ version_added: "0.1.0"
 description:
   - Manages C(blockListUrls) and the related C(enableBlocking) flag on a
     Technitium DNS Server through C(/api/settings/{get,set}).
-  - This is a higher-level wrapper around C(setting) that also handles the
-    two operational concerns specific to blocklists:
-    forcing a download via C(/api/settings/forceUpdateBlockLists), and waiting
-    for the blocklist to be effectively active by probing DNS resolution.
+  - This is a higher-level wrapper around C(setting) that also handles two
+    blocklist-specific operations -- forcing a download via
+    C(/api/settings/forceUpdateBlockLists), and waiting for the blocklist to
+    be effectively active by probing DNS resolution.
   - The C(blockListLastUpdatedOn) settings field is not used as a readiness
     signal because Technitium often leaves it C(null) even when blocklists
     are loaded. Instead, set I(wait_for_active) to resolve a known-blocked
@@ -47,7 +47,7 @@ options:
         server until the rcode matches I(expect_rcode) (or until the
         I(timeout) elapses). Use to detect that the blocklist is actually in
         force, since C(blockListLastUpdatedOn) is unreliable.
-      - Uses a minimal stdlib UDP DNS probe — no external dependency.
+      - Uses a minimal stdlib UDP DNS probe -- no external dependency.
     type: dict
     suboptions:
       probe_domain:
@@ -74,8 +74,10 @@ options:
         default: A
 seealso:
   - module: mipsou.technitium.setting
+extends_documentation_fragment:
+  - mipsou.technitium.session
 author:
-  - mipsou.technitium contributors
+  - mipsou (@mipsou)
 '''
 
 EXAMPLES = r'''
@@ -126,7 +128,7 @@ from ansible_collections.mipsou.technitium.plugins.module_utils.technitium impor
 )
 
 
-# Minimal DNS probe — we only need the response code, so a hand-rolled UDP
+# Minimal DNS probe -- we only need the response code, so a hand-rolled UDP
 # query against the configured Technitium server is enough. Avoids pulling
 # dnspython for what amounts to one struct.pack and one struct.unpack.
 
@@ -178,7 +180,7 @@ def _probe_once(server, port, name, qtype, lifetime):
     try:
         sock.sendto(packet, (server, int(port) or 53))
         while True:
-            data, _ = sock.recvfrom(4096)
+            data, _addr = sock.recvfrom(4096)
             if len(data) < 12:
                 continue
             # Only accept responses matching our transaction id; ignore stray

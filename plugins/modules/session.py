@@ -68,7 +68,7 @@ options:
     type: bool
     default: true
 author:
-  - mipsou.technitium contributors
+  - mipsou (@mipsou)
 '''
 
 EXAMPLES = r'''

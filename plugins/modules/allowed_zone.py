@@ -32,8 +32,10 @@ options:
 seealso:
   - module: mipsou.technitium.blocked_zone
   - module: mipsou.technitium.setting
+extends_documentation_fragment:
+  - mipsou.technitium.session
 author:
-  - mipsou.technitium contributors
+  - mipsou (@mipsou)
 '''
 
 EXAMPLES = r'''

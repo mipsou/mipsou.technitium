@@ -9,7 +9,7 @@ DOCUMENTATION = r'''
 ---
 name: record
 author:
-  - mipsou.technitium contributors
+  - mipsou (@mipsou)
 version_added: "0.1.0"
 short_description: Look up DNS records from a Technitium DNS Server
 description:

@@ -17,7 +17,7 @@ description:
     Two A records with the same name but different IP addresses are treated as
     two distinct resources, matching Technitium's record-set semantics.
   - Updating an existing record's TTL or comments is not supported in
-    v0.1.0 — delete and recreate it, or use C(/api/zones/records/update)
+    v0.1.0 -- delete and recreate it, or use C(/api/zones/records/update)
     via the C(uri) module. The match logic deliberately ignores TTL and
     comments to keep re-runs idempotent against the live state.
 options:
@@ -53,7 +53,7 @@ options:
   overwrite:
     description:
       - When C(true), replaces the entire record set for I(type) at I(name)
-        with the declared record. Use with care — destroys other records of
+        with the declared record. Use with care -- destroys other records of
         the same type at the same name.
     type: bool
     default: false
@@ -100,8 +100,10 @@ options:
     type: str
 seealso:
   - module: mipsou.technitium.zone
+extends_documentation_fragment:
+  - mipsou.technitium.session
 author:
-  - mipsou.technitium contributors
+  - mipsou (@mipsou)
 '''
 
 EXAMPLES = r'''
@@ -149,22 +151,26 @@ from ansible_collections.mipsou.technitium.plugins.module_utils.technitium impor
 )
 
 
-# (record type) -> (param name in our module, key in rData, name of the
-# query parameter accepted by /api/zones/records/{add,delete}). Order matters
-# for matching: every entry is compared for equality.
+# (record type) -> list of (module param, rData key, API param, kind).
+# `kind` drives equality: 'fqdn' lower-cases and strips trailing dot,
+# 'int' coerces, 'str' compares as-is.
 _VALUE_FIELDS = {
-    'A':     [('ip_address', 'ipAddress', 'ipAddress', 'str')],
-    'AAAA':  [('ip_address', 'ipAddress', 'ipAddress', 'str')],
-    'CNAME': [('cname',       'cname',     'cname',     'fqdn')],
-    'NS':    [('name_server', 'nameServer','nameServer','fqdn')],
-    'PTR':   [('ptr_name',    'ptrName',   'ptrName',   'fqdn')],
-    'MX':    [('exchange',    'exchange',  'exchange',  'fqdn'),
-              ('preference',  'preference','preference','int')],
-    'TXT':   [('text',        'text',      'text',      'str')],
-    'SRV':   [('priority',    'priority',  'priority',  'int'),
-              ('weight',      'weight',    'weight',    'int'),
-              ('port',        'port',      'port',      'int'),
-              ('target',      'target',    'target',    'fqdn')],
+    'A': [('ip_address', 'ipAddress', 'ipAddress', 'str')],
+    'AAAA': [('ip_address', 'ipAddress', 'ipAddress', 'str')],
+    'CNAME': [('cname', 'cname', 'cname', 'fqdn')],
+    'NS': [('name_server', 'nameServer', 'nameServer', 'fqdn')],
+    'PTR': [('ptr_name', 'ptrName', 'ptrName', 'fqdn')],
+    'MX': [
+        ('exchange', 'exchange', 'exchange', 'fqdn'),
+        ('preference', 'preference', 'preference', 'int'),
+    ],
+    'TXT': [('text', 'text', 'text', 'str')],
+    'SRV': [
+        ('priority', 'priority', 'priority', 'int'),
+        ('weight', 'weight', 'weight', 'int'),
+        ('port', 'port', 'port', 'int'),
+        ('target', 'target', 'target', 'fqdn'),
+    ],
 }
 
 

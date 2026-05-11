@@ -1,0 +1,10 @@
+LICENSE no-smart-quotes
+plugins/modules/allowed_zone.py validate-modules:missing-gplv3-license
+plugins/modules/blocked_zone.py validate-modules:missing-gplv3-license
+plugins/modules/blocklist.py validate-modules:missing-gplv3-license
+plugins/modules/record.py validate-modules:missing-gplv3-license
+plugins/modules/session.py validate-modules:missing-gplv3-license
+plugins/modules/setting.py validate-modules:missing-gplv3-license
+plugins/modules/user.py validate-modules:missing-gplv3-license
+plugins/modules/zone.py validate-modules:missing-gplv3-license
+plugins/lookup/record.py validate-modules:missing-gplv3-license

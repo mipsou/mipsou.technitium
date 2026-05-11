@@ -50,8 +50,10 @@ options:
         membership entirely (state-based). Omit to leave membership untouched.
     type: list
     elements: str
+extends_documentation_fragment:
+  - mipsou.technitium.session
 author:
-  - mipsou.technitium contributors
+  - mipsou (@mipsou)
 '''
 
 EXAMPLES = r'''

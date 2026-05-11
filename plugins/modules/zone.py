@@ -70,11 +70,12 @@ options:
   use_soa_serial_date_scheme:
     description: Use a date-based SOA serial. Primary, Forwarder, Catalog only.
     type: bool
-extends_documentation_fragment: []
 seealso:
   - module: mipsou.technitium.record
+extends_documentation_fragment:
+  - mipsou.technitium.session
 author:
-  - mipsou.technitium contributors
+  - mipsou (@mipsou)
 '''
 
 EXAMPLES = r'''

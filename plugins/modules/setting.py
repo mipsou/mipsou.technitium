@@ -37,8 +37,10 @@ options:
     required: true
 seealso:
   - module: mipsou.technitium.blocklist
+extends_documentation_fragment:
+  - mipsou.technitium.session
 author:
-  - mipsou.technitium contributors
+  - mipsou (@mipsou)
 '''
 
 EXAMPLES = r'''

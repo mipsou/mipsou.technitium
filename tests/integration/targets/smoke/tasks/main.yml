@@ -18,15 +18,16 @@
     group/mipsou.technitium.all:
       session: "{{ tech.session | default(omit) }}"
   vars:
-    technitium_host: "{{ technitium_host | default('127.0.0.1') }}"
-    technitium_port: "{{ technitium_port | default(5380) }}"
-    technitium_password: "{{ technitium_password | mandatory }}"
+    # technitium_host / technitium_port / technitium_password are expected to
+    # come from -e on the command line. Defaults are inlined per-task with the
+    # `| default(...)` filter, never as self-referencing play vars (which
+    # would loop).
     test_zone: smoketest.local
   tasks:
     - name: Open a session (bootstrap admin/admin → rotate to declared)
       mipsou.technitium.session:
-        host: "{{ technitium_host }}"
-        port: "{{ technitium_port }}"
+        host: "{{ technitium_host | default('127.0.0.1') }}"
+        port: "{{ technitium_port | default(5380) }}"
         user: admin
         password: "{{ technitium_password }}"
         bootstrap_password: admin
@@ -34,8 +35,8 @@
 
     - name: Re-open session is idempotent (no rotation second time)
       mipsou.technitium.session:
-        host: "{{ technitium_host }}"
-        port: "{{ technitium_port }}"
+        host: "{{ technitium_host | default('127.0.0.1') }}"
+        port: "{{ technitium_port | default(5380) }}"
         user: admin
         password: "{{ technitium_password }}"
         bootstrap_password: admin

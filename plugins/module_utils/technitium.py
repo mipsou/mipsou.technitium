@@ -79,9 +79,11 @@ class TechnitiumClient(object):
             host=host,
             port=session.get('port') or params.get('port') or 5380,
             scheme=session.get('scheme') or params.get('scheme') or 'http',
-            validate_certs=session.get('validate_certs')
+            validate_certs=(
+                session.get('validate_certs')
                 if session.get('validate_certs') is not None
-                else params.get('validate_certs', True),
+                else params.get('validate_certs', True)
+            ),
             timeout=session.get('timeout') or params.get('timeout') or 30,
             token=session.get('token') or params.get('token'),
         )
