@@ -1,0 +1,8 @@
+---
+minor_changes:
+  - "New ``group`` module: declarative management of Technitium user groups via
+    ``/api/admin/groups/{list,create,get,set,delete}``. Supports ``state``
+    (present/absent), ``description``, ``members`` (state-based list of
+    usernames, diffed against current membership) and ``permissions`` (opaque
+    dict forwarded as JSON to the API — schema is Technitium API-version
+    dependent, see upstream APIDOCS)."

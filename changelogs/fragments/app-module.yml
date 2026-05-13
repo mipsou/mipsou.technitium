@@ -1,0 +1,10 @@
+---
+minor_changes:
+  - "New ``app`` module: declarative install/update/uninstall/configuration of
+    DNS Apps from the Technitium App Store via
+    ``/api/apps/{list,listStoreApps,downloadAndInstall,downloadAndUpdate,uninstall,config/get,config/set}``.
+    Supports ``state=present`` (any installed version OK), ``state=latest``
+    (sync to store version) and ``state=absent``. The optional ``config``
+    dict is diffed against the current app configuration and pushed only
+    on difference (forwarded as JSON, app-specific schema validated
+    server-side)."

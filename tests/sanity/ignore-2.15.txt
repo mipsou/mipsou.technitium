@@ -8,6 +8,9 @@ plugins/modules/setting.py validate-modules:missing-gplv3-license  # collection 
 plugins/modules/user.py validate-modules:missing-gplv3-license  # collection is EUPL-1.2; relicence to GPL-3.0-or-later on the v1.0 roadmap
 plugins/modules/zone.py validate-modules:missing-gplv3-license  # collection is EUPL-1.2; relicence to GPL-3.0-or-later on the v1.0 roadmap
 plugins/lookup/record.py validate-modules:missing-gplv3-license  # collection is EUPL-1.2; relicence to GPL-3.0-or-later on the v1.0 roadmap
+plugins/modules/app.py validate-modules:missing-gplv3-license  # collection is EUPL-1.2; relicence to GPL-3.0-or-later on the v1.0 roadmap
+plugins/modules/group.py validate-modules:missing-gplv3-license  # collection is EUPL-1.2; relicence to GPL-3.0-or-later on the v1.0 roadmap
+plugins/modules/token.py validate-modules:missing-gplv3-license  # collection is EUPL-1.2; relicence to GPL-3.0-or-later on the v1.0 roadmap
 plugins/module_utils/technitium.py import-2.7  # requires ansible-core>=2.15 (Python 3.9+); urllib.parse/ipaddress unavailable on legacy 2.7 but never exercised at runtime
 plugins/modules/allowed_zone.py import-2.7  # requires ansible-core>=2.15 (Python 3.9+); never exercised on legacy 2.7
 plugins/modules/blocked_zone.py import-2.7  # requires ansible-core>=2.15 (Python 3.9+); never exercised on legacy 2.7
@@ -17,3 +20,6 @@ plugins/modules/session.py import-2.7  # requires ansible-core>=2.15 (Python 3.9
 plugins/modules/setting.py import-2.7  # requires ansible-core>=2.15 (Python 3.9+); never exercised on legacy 2.7
 plugins/modules/user.py import-2.7  # requires ansible-core>=2.15 (Python 3.9+); never exercised on legacy 2.7
 plugins/modules/zone.py import-2.7  # requires ansible-core>=2.15 (Python 3.9+); never exercised on legacy 2.7
+plugins/modules/app.py import-2.7  # requires ansible-core>=2.15 (Python 3.9+); never exercised on legacy 2.7
+plugins/modules/group.py import-2.7  # requires ansible-core>=2.15 (Python 3.9+); never exercised on legacy 2.7
+plugins/modules/token.py import-2.7  # requires ansible-core>=2.15 (Python 3.9+); never exercised on legacy 2.7

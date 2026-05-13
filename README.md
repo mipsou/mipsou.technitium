@@ -8,7 +8,9 @@ Declarative, idempotent management of a [Technitium DNS Server](https://techniti
 via its HTTP API. Replaces raw `uri` calls (and their HTTP-200-but-failed
 quirks) with proper state-based modules supporting `check_mode` and `diff`.
 
-## Scope (v0.1.0)
+## Scope
+
+Released on Galaxy as v0.1.0; the modules below `user` landed in HEAD for the upcoming v0.2.0 release.
 
 | Module | Purpose |
 | --- | --- |
@@ -20,9 +22,13 @@ quirks) with proper state-based modules supporting `check_mode` and `diff`.
 | [`user`](plugins/modules/user.py) | Users; idempotent password rotation |
 | [`allowed_zone`](plugins/modules/allowed_zone.py) | `/api/allowed/*` |
 | [`blocked_zone`](plugins/modules/blocked_zone.py) | `/api/blocked/*` |
+| [`app`](plugins/modules/app.py) | DNS Apps install/update/uninstall + config from store or arbitrary URL |
+| [`group`](plugins/modules/group.py) | User groups + membership + permissions |
+| [`token`](plugins/modules/token.py) | Permanent API tokens (write-once create / list / delete) |
 
 Plus one lookup plugin and a [`TechnitiumClient`](plugins/module_utils/technitium.py)
 public helper. Quirks the collection abstracts away: [`docs/api_quirks.md`](docs/api_quirks.md).
+Community DNS Apps audit (out-of-store): [`docs/dns-apps-community-audit.md`](docs/dns-apps-community-audit.md).
 
 ## Requirements
 

@@ -1,14 +1,14 @@
 ---
 namespace: mipsou
 name: technitium
-version: 0.1.0
+version: 0.2.0
 readme: README.md
 authors:
   - Mipsou <chpujol@gmail.com>
 description: >-
   Manage a Technitium DNS Server via its HTTP API — sessions, settings,
-  zones, records, blocklists, users, allow/block lists. Built for
-  declarative, idempotent workflows (PRA, infra-as-code).
+  zones, records, blocklists, users, groups, tokens, DNS Apps, allow/block
+  lists. Built for declarative, idempotent workflows (PRA, infra-as-code).
 license:
   - EUPL-1.2
 tags:

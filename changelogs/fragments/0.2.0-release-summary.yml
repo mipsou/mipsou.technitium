@@ -1,0 +1,9 @@
+---
+release_summary: |
+  Three new modules round out the identity, app-management and token surface:
+  ``group`` (declarative user groups + membership + permissions), ``token``
+  (write-once permanent API tokens), and ``app`` (DNS Apps install/update/
+  uninstall + config from the official store or arbitrary URLs). A dedicated
+  ``docs/dns-apps-community-audit.md`` reviews 8 out-of-store community apps
+  with a 4-tier zero-trust evaluation so users know what to expect before
+  installing a ZIP from a third-party repo.

@@ -1,0 +1,10 @@
+---
+minor_changes:
+  - "New ``token`` module: declarative management of permanent API tokens via
+    ``/api/user/{createToken,listTokens,deleteToken}``. Idempotency is based
+    on the token name (label). Because Technitium's API is write-once for
+    token values (the secret is returned only at creation), re-runs that
+    find an existing token by name return ``changed=false`` without the
+    token value — callers must capture and persist the value on the first
+    creation run. Rotation is two-step: ``state=absent`` then
+    ``state=present``."

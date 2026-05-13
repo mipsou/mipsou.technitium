@@ -8,3 +8,6 @@ plugins/modules/setting.py validate-modules:missing-gplv3-license  # collection 
 plugins/modules/user.py validate-modules:missing-gplv3-license  # collection is EUPL-1.2; relicence to GPL-3.0-or-later on the v1.0 roadmap
 plugins/modules/zone.py validate-modules:missing-gplv3-license  # collection is EUPL-1.2; relicence to GPL-3.0-or-later on the v1.0 roadmap
 plugins/lookup/record.py validate-modules:missing-gplv3-license  # collection is EUPL-1.2; relicence to GPL-3.0-or-later on the v1.0 roadmap
+plugins/modules/app.py validate-modules:missing-gplv3-license  # collection is EUPL-1.2; relicence to GPL-3.0-or-later on the v1.0 roadmap
+plugins/modules/group.py validate-modules:missing-gplv3-license  # collection is EUPL-1.2; relicence to GPL-3.0-or-later on the v1.0 roadmap
+plugins/modules/token.py validate-modules:missing-gplv3-license  # collection is EUPL-1.2; relicence to GPL-3.0-or-later on the v1.0 roadmap
